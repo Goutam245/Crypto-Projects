@@ -1,7 +1,6 @@
-
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 interface ArbitrageOpportunity {
   symbol: string;
@@ -27,9 +26,9 @@ export default function ArbitrageScanner({ isDarkMode }: ArbitrageScannerProps) 
 
   const exchanges = ['Binance', 'Coinbase', 'Kraken', 'OKX', 'Bybit'];
 
-  const scanForOpportunities = async () => {
+  const scanForOpportunities = useCallback(async () => {
     setIsScanning(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise(resolve => setTimeout(resolve, 1500)); // simulate async delay
 
     const symbols = ['BTC', 'ETH', 'SOL', 'ADA', 'DOT', 'AVAX', 'MATIC', 'LINK'];
     const newOpportunities: ArbitrageOpportunity[] = [];
@@ -66,7 +65,7 @@ export default function ArbitrageScanner({ isDarkMode }: ArbitrageScannerProps) 
     newOpportunities.sort((a, b) => b.spread - a.spread);
     setOpportunities(newOpportunities);
     setIsScanning(false);
-  };
+  }, [minSpread, minVolume, exchanges]);
 
   useEffect(() => {
     if (isOpen) {
@@ -74,7 +73,7 @@ export default function ArbitrageScanner({ isDarkMode }: ArbitrageScannerProps) 
       const interval = setInterval(scanForOpportunities, 10000);
       return () => clearInterval(interval);
     }
-  }, [isOpen, minSpread, minVolume]);
+  }, [isOpen, scanForOpportunities]);
 
   if (!isOpen) {
     return (
@@ -84,7 +83,7 @@ export default function ArbitrageScanner({ isDarkMode }: ArbitrageScannerProps) 
           isDarkMode
             ? 'bg-orange-600 hover:bg-orange-700 text-white'
             : 'bg-orange-500 hover:bg-orange-600 text-white'
-       }`}
+        }`}
       >
         <i className="ri-arrow-left-right-line mr-1 lg:mr-2"></i>
         <span className="hidden sm:inline">Arbitrage Scanner</span>
@@ -174,9 +173,12 @@ export default function ArbitrageScanner({ isDarkMode }: ArbitrageScannerProps) 
           <div className="space-y-3">
             {opportunities.length > 0 ? (
               opportunities.map((opp, index) => (
-                <div key={index} className={`p-3 lg:p-4 rounded-lg border ${
-                  isDarkMode ? 'bg-gray-700/50 border-gray-600' : 'bg-gray-50 border-gray-200'
-                }`}>
+                <div
+                  key={index}
+                  className={`p-3 lg:p-4 rounded-lg border ${
+                    isDarkMode ? 'bg-gray-700/50 border-gray-600' : 'bg-gray-50 border-gray-200'
+                  }`}
+                >
                   <div className="flex flex-col lg:flex-row lg:items-center justify-between space-y-3 lg:space-y-0">
                     <div className="flex flex-col lg:flex-row lg:items-center space-y-2 lg:space-y-0 lg:space-x-4">
                       <div className={`text-base lg:text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -218,11 +220,11 @@ export default function ArbitrageScanner({ isDarkMode }: ArbitrageScannerProps) 
                           ${opp.profit.toFixed(0)}
                         </div>
                       </div>
-                      <button className={`px-3 py-2 rounded font-medium transition-colors whitespace-nowrap text-xs lg:text-sm col-span-2 lg:col-span-1 ${
-                        isDarkMode
-                          ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                          : 'bg-blue-500 hover:bg-blue-600 text-white'
-                      }`}>
+                      <button
+                        className={`px-3 py-2 rounded font-medium transition-colors whitespace-nowrap text-xs lg:text-sm col-span-2 lg:col-span-1 ${
+                          isDarkMode ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'
+                        }`}
+                      >
                         Execute
                       </button>
                     </div>

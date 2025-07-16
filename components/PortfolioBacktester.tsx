@@ -1,7 +1,6 @@
-
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 
 interface BacktestResult {
@@ -38,9 +37,11 @@ export default function PortfolioBacktester({ isDarkMode }: PortfolioBacktesterP
   const runBacktest = async () => {
     setIsRunning(true);
 
+    // Simulate async delay
     await new Promise(resolve => setTimeout(resolve, 2000));
 
-    const generateResults = () => {
+    // Generate fake backtest results
+    const generateResults = (): BacktestResult[] => {
       const data: BacktestResult[] = [];
       let portfolioValue = 10000;
       let btcValue = 10000;
@@ -48,6 +49,7 @@ export default function PortfolioBacktester({ isDarkMode }: PortfolioBacktesterP
       for (let i = 0; i < 30; i++) {
         const date = new Date(Date.now() - (30 - i) * 24 * 60 * 60 * 1000).toLocaleDateString();
 
+        // Random daily returns with a slight bias
         const portfolioChange = (Math.random() - 0.45) * 0.05;
         const btcChange = (Math.random() - 0.48) * 0.06;
 
@@ -71,9 +73,9 @@ export default function PortfolioBacktester({ isDarkMode }: PortfolioBacktesterP
     const finalValue = backtestResults[backtestResults.length - 1].portfolioValue;
     setMetrics({
       totalReturn: ((finalValue - 10000) / 10000) * 100,
-      sharpeRatio: 1.2 + Math.random() * 0.8,
-      maxDrawdown: -(Math.random() * 15 + 5),
-      winRate: 55 + Math.random() * 20
+      sharpeRatio: 1.2 + Math.random() * 0.8, // Random Sharpe ratio between 1.2 and 2.0
+      maxDrawdown: -(Math.random() * 15 + 5), // Between -5% and -20%
+      winRate: 55 + Math.random() * 20 // Between 55% and 75%
     });
 
     setIsRunning(false);
@@ -87,7 +89,7 @@ export default function PortfolioBacktester({ isDarkMode }: PortfolioBacktesterP
           isDarkMode
             ? 'bg-purple-600 hover:bg-purple-700 text-white'
             : 'bg-purple-500 hover:bg-purple-600 text-white'
-       }`}
+        }`}
       >
         <i className="ri-line-chart-line mr-1 lg:mr-2"></i>
         <span className="hidden sm:inline">Portfolio Backtester</span>
@@ -216,8 +218,8 @@ export default function PortfolioBacktester({ isDarkMode }: PortfolioBacktesterP
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={results}>
                         <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#374151' : '#E5E7EB'} />
-                        <XAxis dataKey="date" stroke={isDarkMode ? '#9CA3AF' : '#6B7280'} fontSize={10} tick={{ fontSize: 10 }} />
-                        <YAxis stroke={isDarkMode ? '#9CA3AF' : '#6B7280'} fontSize={10} tick={{ fontSize: 10 }} />
+                        <XAxis dataKey="date" stroke={isDarkMode ? '#9CA3AF' : '#6B7280'} fontSize={10} />
+                        <YAxis stroke={isDarkMode ? '#9CA3AF' : '#6B7280'} fontSize={10} />
                         <Line
                           type="monotone"
                           dataKey="portfolioValue"

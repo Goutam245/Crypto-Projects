@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -16,14 +15,22 @@ export default function TradingInterface({ symbol, isDarkMode }: TradingInterfac
   const [priceChange, setPriceChange] = useState(2.4);
 
   useEffect(() => {
+    // Interval to simulate price changes every 1 second
     const interval = setInterval(() => {
-      const change = (Math.random() - 0.5) * 100;
+      // TODO: Replace this with real price update from API or websocket
+      const change = (Math.random() - 0.5) * 100; // Random price change between -50 and +50
       setCurrentPrice(prev => Math.max(0, prev + change));
-      setPriceChange((Math.random() - 0.5) * 10);
+      setPriceChange((Math.random() - 0.5) * 10); // Random % change between -5% and +5%
     }, 1000);
 
     return () => clearInterval(interval);
   }, [symbol]);
+
+  // 24h High and Low are calculated as +/- 5% of current price
+  // TODO: Replace with actual 24h high and low from API
+
+  // Volume is randomly generated
+  // TODO: Replace with real volume data from API
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
@@ -35,7 +42,7 @@ export default function TradingInterface({ symbol, isDarkMode }: TradingInterfac
             </h2>
             <div className="flex items-center space-x-2">
               <span className={`text-2xl lg:text-3xl font-bold ${priceChange >= 0 ? (isDarkMode ? 'text-green-400' : 'text-green-600') : (isDarkMode ? 'text-red-400' : 'text-red-600')}`}>
-                ${currentPrice.toLocaleString()}
+                ${currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
               <span className={`text-sm lg:text-lg px-2 lg:px-3 py-1 rounded ${priceChange >= 0 ? (isDarkMode ? 'bg-green-900/20 text-green-400' : 'bg-green-100 text-green-800') : (isDarkMode ? 'bg-red-900/20 text-red-400' : 'bg-red-100 text-red-800')}`}>
                 {priceChange >= 0 ? '▲' : '▼'} {Math.abs(priceChange).toFixed(2)}%
@@ -47,19 +54,20 @@ export default function TradingInterface({ symbol, isDarkMode }: TradingInterfac
             <div>
               <span className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>24h High: </span>
               <span className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                ${(currentPrice * 1.05).toLocaleString()}
+                ${(currentPrice * 1.05).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
             <div>
               <span className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>24h Low: </span>
               <span className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                ${(currentPrice * 0.95).toLocaleString()}
+                ${(currentPrice * 0.95).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
             <div>
               <span className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Volume: </span>
               <span className={`font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                ${(Math.random() * 1000 + 500).toFixed(0)}M
+                {/* Random volume between 500M and 1500M */}
+                {(Math.random() * 1000 + 500).toFixed(0)}M
               </span>
             </div>
           </div>

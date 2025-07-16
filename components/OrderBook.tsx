@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -19,64 +18,72 @@ export default function OrderBook({ symbol, isDarkMode }: OrderBookProps) {
   const [bids, setBids] = useState<Order[]>([]);
   const [asks, setAsks] = useState<Order[]>([]);
   const [spread, setSpread] = useState(0);
+  const [basePrice, setBasePrice] = useState(67234.56); // 🟢 এখানে state হিসাবে রাখা হলো
 
   useEffect(() => {
     const generateOrders = () => {
-      const basePrice = 67234.56;
       const newBids: Order[] = [];
       const newAsks: Order[] = [];
 
-      let total = 0;
+      let totalBids = 0;
+      const tempBase = basePrice;
+
       for (let i = 0; i < 15; i++) {
-        const price = basePrice - (i + 1) * (Math.random() * 5 + 1);
+        const price = tempBase - (i + 1) * (Math.random() * 5 + 1);
         const size = Math.random() * 2 + 0.1;
-        total += size;
-        newBids.push({ price, size, total });
+        totalBids += size;
+        newBids.push({ price, size, total: totalBids });
       }
 
-      total = 0;
+      let totalAsks = 0;
       for (let i = 0; i < 15; i++) {
-        const price = basePrice + (i + 1) * (Math.random() * 5 + 1);
+        const price = tempBase + (i + 1) * (Math.random() * 5 + 1);
         const size = Math.random() * 2 + 0.1;
-        total += size;
-        newAsks.push({ price, size, total });
+        totalAsks += size;
+        newAsks.push({ price, size, total: totalAsks });
       }
 
       setBids(newBids);
-      setAsks(newAsks.reverse());
+      setAsks(newAsks);
 
       if (newAsks.length > 0 && newBids.length > 0) {
-        setSpread(newAsks[newAsks.length - 1].price - newBids[0].price);
+        const highestBidPrice = newBids[0].price;
+        const lowestAskPrice = newAsks[0].price;
+        setSpread(lowestAskPrice - highestBidPrice);
+        setBasePrice(highestBidPrice); // 🟢 আপডেট করা হলো
       }
     };
 
     const handleOrderBookUpdate = (data: OrderBookData) => {
-      if (data.symbol === symbol) {
-        const newBids: Order[] = [];
-        const newAsks: Order[] = [];
+      if (data.symbol !== symbol) return;
 
-        let total = 0;
-        data.bids.slice(0, 15).forEach(([priceStr, sizeStr]) => {
-          const price = parseFloat(priceStr);
-          const size = parseFloat(sizeStr);
-          total += size;
-          newBids.push({ price, size, total });
-        });
+      const newBids: Order[] = [];
+      const newAsks: Order[] = [];
 
-        total = 0;
-        data.asks.slice(0, 15).reverse().forEach(([priceStr, sizeStr]) => {
-          const price = parseFloat(priceStr);
-          const size = parseFloat(sizeStr);
-          total += size;
-          newAsks.push({ price, size, total });
-        });
+      let totalBids = 0;
+      data.bids.slice(0, 15).forEach(([priceStr, sizeStr]) => {
+        const price = parseFloat(priceStr);
+        const size = parseFloat(sizeStr);
+        totalBids += size;
+        newBids.push({ price, size, total: totalBids });
+      });
 
-        setBids(newBids);
-        setAsks(newAsks);
+      let totalAsks = 0;
+      data.asks.slice(0, 15).forEach(([priceStr, sizeStr]) => {
+        const price = parseFloat(priceStr);
+        const size = parseFloat(sizeStr);
+        totalAsks += size;
+        newAsks.push({ price, size, total: totalAsks });
+      });
 
-        if (newAsks.length > 0 && newBids.length > 0) {
-          setSpread(newAsks[newAsks.length - 1].price - newBids[0].price);
-        }
+      setBids(newBids);
+      setAsks(newAsks);
+
+      if (newAsks.length > 0 && newBids.length > 0) {
+        const highestBidPrice = newBids[0].price;
+        const lowestAskPrice = newAsks[0].price;
+        setSpread(lowestAskPrice - highestBidPrice);
+        setBasePrice(highestBidPrice); // 🟢 আপডেট করা হলো
       }
     };
 
@@ -118,17 +125,15 @@ export default function OrderBook({ symbol, isDarkMode }: OrderBookProps) {
         <div className="h-20 lg:h-32 overflow-y-auto">
           {asks.map((ask, index) => (
             <div key={index} className="grid grid-cols-3 gap-1 p-1 text-xs hover:bg-red-900/10 transition-colors relative">
-              <div
-                className="absolute inset-y-0 right-0 bg-red-500/10"
-                style={{ width: `${(ask.total / Math.max(...asks.map(a => a.total))) * 100}%` }}
-              />
-              <span className={`font-mono text-xs lg:text-sm ${isDarkMode ? 'text-red-400' : 'text-red-600'} relative z-10`}>
+              <div className="absolute inset-y-0 right-0 bg-red-500/10"
+                style={{ width: `${(ask.total / Math.max(...asks.map(a => a.total))) * 100}%` }} />
+              <span className={`font-mono ${isDarkMode ? 'text-red-400' : 'text-red-600'} relative z-10`}>
                 {ask.price.toFixed(2)}
               </span>
-              <span className={`text-right font-mono text-xs lg:text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'} relative z-10`}>
+              <span className={`text-right font-mono ${isDarkMode ? 'text-white' : 'text-gray-900'} relative z-10`}>
                 {ask.size.toFixed(6)}
               </span>
-              <span className={`text-right font-mono text-xs lg:text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} relative z-10`}>
+              <span className={`text-right font-mono ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} relative z-10`}>
                 {ask.total.toFixed(4)}
               </span>
             </div>
@@ -137,7 +142,7 @@ export default function OrderBook({ symbol, isDarkMode }: OrderBookProps) {
 
         <div className={`p-2 text-center border-y ${isDarkMode ? 'border-gray-700 bg-gray-750' : 'border-gray-200 bg-gray-50'}`}>
           <div className={`text-base lg:text-lg font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-            ${(bids[0]?.price || 67234.56).toFixed(2)}
+            ${(bids[0]?.price || basePrice).toFixed(2)}
           </div>
           <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
             Last Price
@@ -147,17 +152,15 @@ export default function OrderBook({ symbol, isDarkMode }: OrderBookProps) {
         <div className="h-20 lg:h-32 overflow-y-auto">
           {bids.map((bid, index) => (
             <div key={index} className="grid grid-cols-3 gap-1 p-1 text-xs hover:bg-green-900/10 transition-colors relative">
-              <div
-                className="absolute inset-y-0 right-0 bg-green-500/10"
-                style={{ width: `${(bid.total / Math.max(...bids.map(b => b.total))) * 100}%` }}
-              />
-              <span className={`font-mono text-xs lg:text-sm ${isDarkMode ? 'text-green-400' : 'text-green-600'} relative z-10`}>
+              <div className="absolute inset-y-0 right-0 bg-green-500/10"
+                style={{ width: `${(bid.total / Math.max(...bids.map(b => b.total))) * 100}%` }} />
+              <span className={`font-mono ${isDarkMode ? 'text-green-400' : 'text-green-600'} relative z-10`}>
                 {bid.price.toFixed(2)}
               </span>
-              <span className={`text-right font-mono text-xs lg:text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'} relative z-10`}>
+              <span className={`text-right font-mono ${isDarkMode ? 'text-white' : 'text-gray-900'} relative z-10`}>
                 {bid.size.toFixed(6)}
               </span>
-              <span className={`text-right font-mono text-xs lg:text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} relative z-10`}>
+              <span className={`text-right font-mono ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} relative z-10`}>
                 {bid.total.toFixed(4)}
               </span>
             </div>

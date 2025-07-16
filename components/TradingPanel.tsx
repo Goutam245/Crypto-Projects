@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -11,15 +10,17 @@ interface TradingPanelProps {
 
 export default function TradingPanel({ symbol, isDarkMode }: TradingPanelProps) {
   const [orderType, setOrderType] = useState('market');
-  const [side, setSide] = useState('buy');
+  const [side, setSide] = useState<'buy' | 'sell'>('buy');
   const [amount, setAmount] = useState('');
   const [price, setPrice] = useState('');
 
+  // TODO: Replace with real position data from API
   const [positions] = useState([
     { symbol: 'BTCUSDT', side: 'LONG', size: 0.5, pnl: 234.56, pnlPercent: 2.4 },
     { symbol: 'ETHUSDT', side: 'SHORT', size: 2.1, pnl: -123.45, pnlPercent: -1.8 }
   ]);
 
+  // TODO: Replace with real-time trades via WebSocket or REST API
   const [recentTrades] = useState([
     { price: 67234.56, size: 0.123, time: '14:32:45', side: 'buy' },
     { price: 67228.94, size: 0.456, time: '14:32:43', side: 'sell' },
@@ -37,20 +38,21 @@ export default function TradingPanel({ symbol, isDarkMode }: TradingPanelProps) 
       return;
     }
 
+    // TODO: Replace hardcoded values and random score with real audit/compliance logic
     auditLogger.log({
       userId: 'user_demo_001',
       action: `${side.toUpperCase()}_ORDER_SUBMITTED`,
       symbol: symbol,
       amount: orderAmount,
       price: orderPrice,
-      side: side as 'buy' | 'sell',
-      orderType: orderType as 'market' | 'limit',
+      side,
+      orderType,
       status: 'success',
-      ipAddress: '192.168.1.100',
+      ipAddress: '192.168.1.100', // Replace with dynamic IP if needed
       userAgent: navigator.userAgent,
       compliance: {
         micaCompliant: true,
-        riskScore: Math.floor(Math.random() * 5) + 1,
+        riskScore: 3, // Replace Math.random with real value from backend compliance engine
         region: 'EU'
       }
     });
@@ -62,63 +64,50 @@ export default function TradingPanel({ symbol, isDarkMode }: TradingPanelProps) 
 
   return (
     <div className={`flex-1 lg:max-h-96 ${isDarkMode ? 'bg-gray-800' : 'bg-white'} transition-colors duration-200 overflow-y-auto`}>
+      
+      {/* --- Order Form --- */}
       <div className={`p-3 lg:p-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-        <h3 className={`text-base lg:text-lg font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-          Trading Panel
-        </h3>
+        <h3 className={`text-base lg:text-lg font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Trading Panel</h3>
 
+        {/* Buy/Sell Toggle */}
         <div className="space-y-3 lg:space-y-4">
           <div className="flex space-x-2">
-            <button
-              onClick={() => setSide('buy')}
-              className={`flex-1 py-2 px-3 lg:px-4 rounded font-semibold text-sm lg:text-base transition-colors whitespace-nowrap ${
-                side === 'buy'
-                  ? 'bg-green-600 text-white'
-                  : (isDarkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300')
-              }`}
-            >
-              Buy
-            </button>
-            <button
-              onClick={() => setSide('sell')}
-              className={`flex-1 py-2 px-3 lg:px-4 rounded font-semibold text-sm lg:text-base transition-colors whitespace-nowrap ${
-                side === 'sell'
-                  ? 'bg-red-600 text-white'
-                  : (isDarkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300')
-              }`}
-            >
-              Sell
-            </button>
+            {['buy', 'sell'].map((type) => (
+              <button
+                key={type}
+                onClick={() => setSide(type as 'buy' | 'sell')}
+                className={`flex-1 py-2 px-3 lg:px-4 rounded font-semibold text-sm lg:text-base transition-colors ${
+                  side === type
+                    ? type === 'buy' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+                    : isDarkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                {type.charAt(0).toUpperCase() + type.slice(1)}
+              </button>
+            ))}
           </div>
 
+          {/* Market/Limit Toggle */}
           <div className="flex space-x-2">
-            <button
-              onClick={() => setOrderType('market')}
-              className={`flex-1 py-1 px-2 lg:px-3 rounded text-xs lg:text-sm transition-colors whitespace-nowrap ${
-                orderType === 'market'
-                  ? (isDarkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white')
-                  : (isDarkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300')
-              }`}
-            >
-              Market
-            </button>
-            <button
-              onClick={() => setOrderType('limit')}
-              className={`flex-1 py-1 px-2 lg:px-3 rounded text-xs lg:text-sm transition-colors whitespace-nowrap ${
-                orderType === 'limit'
-                  ? (isDarkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white')
-                  : (isDarkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300')
-              }`}
-            >
-              Limit
-            </button>
+            {['market', 'limit'].map((type) => (
+              <button
+                key={type}
+                onClick={() => setOrderType(type)}
+                className={`flex-1 py-1 px-2 lg:px-3 rounded text-xs lg:text-sm transition-colors ${
+                  orderType === type
+                    ? isDarkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'
+                    : isDarkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                {type.charAt(0).toUpperCase() + type.slice(1)}
+              </button>
+            ))}
           </div>
 
+          {/* Limit Price Input */}
           {orderType === 'limit' && (
             <div>
-              <label className={`block text-xs lg:text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                Price
-              </label>
+              <label className={`block text-xs lg:text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Price</label>
               <input
                 type="number"
                 value={price}
@@ -133,10 +122,9 @@ export default function TradingPanel({ symbol, isDarkMode }: TradingPanelProps) 
             </div>
           )}
 
+          {/* Amount Input */}
           <div>
-            <label className={`block text-xs lg:text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              Amount
-            </label>
+            <label className={`block text-xs lg:text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Amount</label>
             <input
               type="number"
               value={amount}
@@ -150,12 +138,11 @@ export default function TradingPanel({ symbol, isDarkMode }: TradingPanelProps) 
             />
           </div>
 
+          {/* Submit Order Button */}
           <button
             onClick={handleSubmitOrder}
-            className={`w-full py-2 lg:py-3 px-3 lg:px-4 rounded font-semibold text-sm lg:text-base transition-colors whitespace-nowrap ${
-              side === 'buy'
-                ? 'bg-green-600 hover:bg-green-700 text-white'
-                : 'bg-red-600 hover:bg-red-700 text-white'
+            className={`w-full py-2 lg:py-3 px-3 lg:px-4 rounded font-semibold text-sm lg:text-base transition-colors ${
+              side === 'buy' ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-red-600 hover:bg-red-700 text-white'
             }`}
           >
             {side === 'buy' ? 'Buy' : 'Sell'} {symbol.replace('USDT', '')}
@@ -163,33 +150,30 @@ export default function TradingPanel({ symbol, isDarkMode }: TradingPanelProps) 
         </div>
       </div>
 
+      {/* --- Positions --- */}
       <div className={`p-3 lg:p-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-        <h4 className={`text-sm lg:text-md font-semibold mb-3 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-          Open Positions
-        </h4>
+        <h4 className={`text-sm lg:text-md font-semibold mb-3 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Open Positions</h4>
         <div className="space-y-2">
           {positions.map((position, index) => (
             <div key={index} className={`p-2 lg:p-3 rounded ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex justify-between mb-1">
                 <span className={`font-semibold text-xs lg:text-sm ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
                   {position.symbol.replace('USDT', '')}
                 </span>
                 <span className={`text-xs px-2 py-1 rounded ${
                   position.side === 'LONG'
-                    ? (isDarkMode ? 'bg-green-900/20 text-green-400' : 'bg-green-100 text-green-800')
-                    : (isDarkMode ? 'bg-red-900/20 text-red-400' : 'bg-red-100 text-red-800')
+                    ? isDarkMode ? 'bg-green-900/20 text-green-400' : 'bg-green-100 text-green-800'
+                    : isDarkMode ? 'bg-red-900/20 text-red-400' : 'bg-red-100 text-red-800'
                 }`}>
                   {position.side}
                 </span>
               </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  Size: {position.size}
-                </span>
+              <div className="flex justify-between text-xs">
+                <span className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Size: {position.size}</span>
                 <span className={`font-semibold ${
                   position.pnl >= 0
-                    ? (isDarkMode ? 'text-green-400' : 'text-green-600')
-                    : (isDarkMode ? 'text-red-400' : 'text-red-600')
+                    ? isDarkMode ? 'text-green-400' : 'text-green-600'
+                    : isDarkMode ? 'text-red-400' : 'text-red-600'
                 }`}>
                   ${position.pnl.toFixed(2)} ({position.pnlPercent.toFixed(1)}%)
                 </span>
@@ -199,26 +183,17 @@ export default function TradingPanel({ symbol, isDarkMode }: TradingPanelProps) 
         </div>
       </div>
 
+      {/* --- Recent Trades --- */}
       <div className="p-3 lg:p-4">
-        <h4 className={`text-sm lg:text-md font-semibold mb-3 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-          Recent Trades
-        </h4>
+        <h4 className={`text-sm lg:text-md font-semibold mb-3 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Recent Trades</h4>
         <div className="space-y-1 max-h-32 overflow-y-auto">
           {recentTrades.map((trade, index) => (
-            <div key={index} className="flex items-center justify-between text-xs">
-              <span className={`font-mono ${
-                trade.side === 'buy'
-                  ? (isDarkMode ? 'text-green-400' : 'text-green-600')
-                  : (isDarkMode ? 'text-red-400' : 'text-red-600')
-              }`}>
+            <div key={index} className="flex justify-between text-xs">
+              <span className={`font-mono ${trade.side === 'buy' ? isDarkMode ? 'text-green-400' : 'text-green-600' : isDarkMode ? 'text-red-400' : 'text-red-600'}`}>
                 ${trade.price.toFixed(2)}
               </span>
-              <span className={`font-mono ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                {trade.size.toFixed(3)}
-              </span>
-              <span className={`font-mono ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                {trade.time}
-              </span>
+              <span className={`font-mono ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{trade.size.toFixed(3)}</span>
+              <span className={`font-mono ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{trade.time}</span>
             </div>
           ))}
         </div>

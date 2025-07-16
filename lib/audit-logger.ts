@@ -15,7 +15,7 @@ export interface AuditLogEntry {
   userAgent?: string;
   compliance: {
     micaCompliant: boolean;
-    riskScore: number;
+    riskScore: number; // TODO: Replace with real backend risk score if applicable
     region: string;
   };
 }
@@ -32,7 +32,7 @@ class AuditLogger {
     const logEntry: AuditLogEntry = {
       ...entry,
       id: this.generateId(),
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     this.logs.unshift(logEntry);
@@ -62,7 +62,11 @@ class AuditLogger {
   }
 
   private generateId(): string {
-    return `log_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      return `log_${crypto.randomUUID()}`;
+    } else {
+      return `log_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    }
   }
 
   private saveToStorage(): void {
@@ -87,8 +91,7 @@ class AuditLogger {
         this.logs = [];
       }
     } else {
-      // Server-side: fallback to empty logs
-      this.logs = [];
+      this.logs = []; // fallback
     }
   }
 }
